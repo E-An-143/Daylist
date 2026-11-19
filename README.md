@@ -42,11 +42,6 @@ python -m http.server 8000
 - 可选云同步：在 `cloud-config.js` 中填入你自己的云服务公开配置（endpoint / publishableKey）即可启用；云端表 `daylist_records` 只有一行固定空间（`owner_id = 'personal'`），结构为 `{ version, todos, groups, trash: { todos, groups } }`
 - 多台设备同时离线修改时，以最后一次上传到云端的整份清单为准
 
-## 维护约定
-
-- 改动 `styles.css` 或 `app.js` 后，同步提升 `index.html` 中两处 `?v=` 版本号，避免浏览器命中旧缓存
-- 交互风格：数据先行、原地刷新；列表重排与删除离场动画统一走 `--duration-collapse` 节奏，避免二次位移
-- 单日视图的分组名称只作展示，分组编辑统一在「分组」视图完成
 
 ## 字体许可
 
