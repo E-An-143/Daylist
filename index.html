@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f2ea">
+  <meta name="description" content="一个轻量的待办清单：按天安排事项，支持备注、重要标记、超期提醒与总览统计">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>待办 · 今天做什么</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="preload" href="fonts/harmonyos-sans-sc-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=20261117s3">
+  <script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
+  <script src="cloud-config.js"></script>
+  <script src="app.js?v=20261117s3" defer></script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 6.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></symbol>
+    <symbol id="i-groups" viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="6" rx="1.8"/><rect x="3.5" y="14" width="17" height="6" rx="1.8"/><path d="M7 7h.01M7 17h.01M10.5 7h6M10.5 17h6"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><path d="M6 3.5h8.5L20 8.5v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z"/><path d="M14 3.5v5.5h5.5"/><path d="M8.5 13h7M8.5 16.5h4.5"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3 14.06 9.17 20.56 9.22 15.33 13.08 17.29 19.28 12 15.5 6.71 19.28 8.67 13.08 3.44 9.22 9.94 9.17Z"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m14.5 5-7 7 7 7"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9.5 5 7 7-7 7"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 6.5h15M9.5 6V4h5v2M7 6.5l.8 13a1 1 0 0 0 1 1h6.4a1 1 0 0 0 1-1l.8-13"/><path d="M10 10.5v6M14 10.5v6"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5 21 19.5H3L12 3.5Z"/><path d="M12 9.5v4.5M12 17.2v.3"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4.5 12h15m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.5v11m0 0 4-4m-4 4-4-4"/><path d="M4.5 16.5v3a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-3"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15.5v-11m0 0 4 4m-4-4-4 4"/><path d="M4.5 16.5v3a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-3"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="15" rx="2.6"/><path d="M3.5 10h17M8.5 3.4v4M15.5 3.4v4"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.75 12C4.65 8.4 8.05 6 12 6s7.35 2.4 9.25 6C19.35 15.6 15.95 18 12 18S4.65 15.6 2.75 12Z"/><circle cx="12" cy="12" r="2.75"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><mask id="overdue-eye-slash-gap" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="white" stroke="none"/><path d="m4 4 16 16" stroke="black" stroke-width="4.5"/></mask><g mask="url(#overdue-eye-slash-gap)"><path d="M2.75 12C4.65 8.4 8.05 6 12 6s7.35 2.4 9.25 6C19.35 15.6 15.95 18 12 18S4.65 15.6 2.75 12Z"/><circle cx="12" cy="12" r="2.75"/></g><path d="m4 4 16 16"/></symbol>
+    <symbol id="i-restore" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></symbol>
+  </svg>
+
+  <div class="app">
+    <div class="scrim" id="scrim" hidden></div>
+
+    <aside class="sidebar" id="sidebar" aria-label="待办导航">
+      <div class="brand-row">
+        <a class="brand" href="#" id="brand-link" aria-label="待办首页">
+          <span class="brand-mark"><svg class="icon"><use href="#i-check"></use></svg></span>
+          <span class="brand-text"><strong>待办</strong><small>DAYLIST</small></span>
+        </a>
+        <button class="icon-btn nav-close" id="nav-close" type="button" aria-label="关闭菜单">
+          <svg class="icon"><use href="#i-x"></use></svg>
+        </button>
+      </div>
+
+      <nav class="side-nav" aria-label="视图">
+        <button class="side-item is-active" type="button" data-mode="overview" id="nav-overview">
+          <svg class="icon"><use href="#i-grid"></use></svg><span>总览</span><em class="danger-count" id="nav-overdue">0</em>
+        </button>
+        <button class="side-item" type="button" data-mode="today" id="nav-today">
+          <svg class="icon"><use href="#i-sun"></use></svg><span>今天</span><em id="nav-today-count">0 / 0</em>
+        </button>
+        <button class="side-item" type="button" data-mode="groups" id="nav-groups">
+          <svg class="icon"><use href="#i-groups"></use></svg><span>分组</span><em id="nav-group-count">0</em>
+        </button>
+        <button class="side-item" type="button" data-mode="trash" id="nav-trash">
+          <svg class="icon"><use href="#i-trash"></use></svg><span>回收站</span><em id="nav-trash-count">0</em>
+        </button>
+      </nav>
+
+      <section class="calendar-block" aria-label="月历">
+        <div class="cal-head">
+          <button class="cal-arrow" type="button" id="cal-prev" aria-label="上个月">
+            <svg class="icon"><use href="#i-chevron-left"></use></svg>
+          </button>
+          <button class="cal-title" type="button" id="cal-title" title="回到本月">2026年11月</button>
+          <button class="cal-arrow" type="button" id="cal-next" aria-label="下个月">
+            <svg class="icon"><use href="#i-chevron-right"></use></svg>
+          </button>
+        </div>
+        <div class="cal-weekdays" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend" aria-label="日历标记说明">
+          <span><i class="cal-dot done"></i>完成</span>
+          <span><i class="cal-dot open"></i>待办</span>
+          <span><i class="cal-dot overdue"></i>超期</span>
+        </div>
+      </section>
+
+      <section class="month-summary" aria-label="本月进度">
+        <div class="month-line"><span>当月进度</span><strong id="month-rate">0%</strong></div>
+        <div class="mini-bar"><i id="month-bar"></i></div>
+        <p id="month-caption">共 0 项</p>
+      </section>
+
+      <div class="sidebar-foot">
+        <div class="data-row">
+          <button class="foot-btn" type="button" id="export-btn"><svg class="icon"><use href="#i-download"></use></svg>导出</button>
+          <button class="foot-btn" type="button" id="import-btn"><svg class="icon"><use href="#i-upload"></use></svg>导入</button>
+          <input type="file" id="import-file" accept="application/json,.json" hidden>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="sidebar">
+            <svg class="icon"><use href="#i-menu"></use></svg>
+          </button>
+          <div class="title-block">
+            <h1 id="view-title">总览</h1>
+            <p class="view-sub" id="view-sub"></p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="ghost-btn" type="button" id="today-btn" hidden>回到今天</button>
+          <button class="ghost-btn group-view-add" type="button" id="group-view-add" hidden><svg class="icon"><use href="#i-plus"></use></svg>新建分组</button>
+        </div>
+      </header>
+
+      <div class="week-strip" id="week-strip" hidden aria-label="本周快速切换"></div>
+
+      <section class="view" id="overview-view" aria-label="总览">
+        <div id="overview-content"></div>
+      </section>
+
+      <section class="view day-view" id="day-view" aria-label="单日待办" hidden>
+        <div class="day-summary">
+          <div class="day-summary-top">
+            <p class="day-progress"><strong id="day-done">0</strong><span id="day-total">/ 0 已完成</span></p>
+            <p class="day-note" id="day-note"></p>
+          </div>
+          <div class="progress-track"><i id="day-bar"></i></div>
+        </div>
+
+        <div class="add-stack">
+          <button class="group-add" id="group-add" type="button">
+            <span class="add-plus" aria-hidden="true"></span><span class="add-label">新建分组</span>
+          </button>
+          <div class="quick-add" id="quick-add">
+            <span class="add-plus" aria-hidden="true"></span>
+            <input id="quick-input" type="text" maxlength="200" placeholder="在这里输入以添加待办" aria-label="添加待办" autocomplete="off">
+            <button class="quick-btn" id="quick-add-btn" type="button">添加</button>
+          </div>
+        </div>
+
+        <div id="overdue-block"></div>
+        <div class="task-list" id="task-list"></div>
+
+        <div class="empty day-empty" id="day-empty" hidden>
+          <span class="empty-icon"><svg class="icon"><use href="#i-note"></use></svg></span>
+          <h2>这一天还没有安排</h2>
+        </div>
+      </section>
+
+      <section class="view groups-view" id="groups-view" aria-label="分组查看" hidden>
+        <div id="groups-content"></div>
+      </section>
+
+      <section class="view trash-view" id="trash-view" aria-label="回收站" hidden>
+        <div id="trash-content"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="modal" id="todo-dialog" aria-labelledby="modal-title">
+    <form id="todo-form" novalidate>
+      <header class="modal-head">
+        <h2 id="modal-title">添加一条待办</h2>
+        <button class="icon-btn" type="button" id="modal-close" aria-label="关闭">
+          <svg class="icon"><use href="#i-x"></use></svg>
+        </button>
+      </header>
+      <div class="modal-body">
+        <label class="field">
+          <span class="field-label">待办内容</span>
+          <input id="todo-title" type="text" maxlength="200" placeholder="例如：整理本周会议纪要" autocomplete="off">
+        </label>
+        <label class="field" id="todo-group-field" hidden>
+          <span class="field-label">分组</span>
+          <select id="todo-group"></select>
+        </label>
+        <p class="form-error" id="todo-error" role="alert" hidden></p>
+      </div>
+      <footer class="modal-foot">
+        <div class="modal-actions">
+          <button class="ghost-btn" type="button" id="modal-cancel">取消</button>
+          <button class="primary-btn" type="submit">保存</button>
+        </div>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog class="modal mini" id="group-dialog" aria-labelledby="group-title">
+    <form id="group-form" novalidate>
+      <header class="modal-head">
+        <div>
+          <h2 id="group-title">新建分组</h2>
+        </div>
+        <button class="icon-btn" type="button" id="group-close" aria-label="关闭">
+          <svg class="icon"><use href="#i-x"></use></svg>
+        </button>
+      </header>
+      <div class="modal-body">
+        <label class="field">
+          <span class="field-label">分组名称</span>
+          <input id="group-name" type="text" maxlength="24" autocomplete="off">
+        </label>
+        <p class="form-error" id="group-error" role="alert" hidden></p>
+      </div>
+      <footer class="modal-foot">
+        <div class="modal-actions">
+          <button class="ghost-btn" type="button" id="group-cancel">取消</button>
+          <button class="primary-btn" type="submit">保存</button>
+        </div>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog class="modal mini" id="move-dialog" aria-labelledby="move-title">
+    <div class="dialog-shell">
+      <header class="modal-head">
+        <div>
+          <h2 id="move-title">移动分组</h2>
+        </div>
+        <button class="icon-btn" type="button" id="move-close" aria-label="关闭">
+          <svg class="icon"><use href="#i-x"></use></svg>
+        </button>
+      </header>
+      <div class="modal-body">
+        <div class="move-list" id="move-list"></div>
+      </div>
+      <footer class="modal-foot">
+        <button class="ghost-btn" type="button" id="move-new">新建分组</button>
+        <div class="modal-actions">
+          <button class="ghost-btn" type="button" id="move-cancel">取消</button>
+        </div>
+      </footer>
+    </div>
+  </dialog>
+
+  <dialog class="modal mini" id="day-dialog" aria-labelledby="day-title">
+    <div class="dialog-shell">
+      <header class="modal-head">
+        <div>
+          <h2 id="day-title">移动到哪一天</h2>
+        </div>
+        <button class="icon-btn" type="button" id="day-close" aria-label="关闭">
+          <svg class="icon"><use href="#i-x"></use></svg>
+        </button>
+      </header>
+      <div class="modal-body">
+        <div class="day-cal" id="day-cal" tabindex="-1"></div>
+      </div>
+      <footer class="modal-foot">
+        <p class="day-cal-note" id="day-cal-note"></p>
+        <div class="modal-actions">
+          <button class="ghost-btn" type="button" id="day-cancel">取消</button>
+        </div>
+      </footer>
+    </div>
+  </dialog>
+
+  <dialog class="clone-dialog" id="clone-dialog" aria-labelledby="clone-title" aria-describedby="clone-source">
+    <div id="clone-picker" tabindex="-1"></div>
+  </dialog>
+
+  <dialog class="modal mini" id="notice-dialog" aria-labelledby="notice-title">
+    <div class="dialog-shell">
+      <header class="modal-head">
+        <div>
+          <h2 id="notice-title">分组已创建</h2>
+        </div>
+        <button class="icon-btn" type="button" id="notice-close" aria-label="关闭">
+          <svg class="icon"><use href="#i-x"></use></svg>
+        </button>
+      </header>
+      <div class="modal-body">
+        <p class="notice-text" id="notice-text"></p>
+      </div>
+      <footer class="modal-foot">
+        <div class="modal-actions">
+          <button class="primary-btn" type="button" id="notice-ok">知道了</button>
+        </div>
+      </footer>
+    </div>
+  </dialog>
+
+  <button class="fab" id="fab-new" type="button" aria-label="新建待办">
+    <svg class="icon"><use href="#i-plus"></use></svg>
+  </button>
+</body>
+</html>
